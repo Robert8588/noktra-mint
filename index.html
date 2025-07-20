@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOKTRA Mint</title>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.73.2/lib/index.iife.min.js"></script>
+    <style>
+      body {
+        background-color: #0e0e0e;
+        color: #00ffcc;
+        font-family: monospace;
+        text-align: center;
+        padding: 100px 20px;
+      }
+      button {
+        padding: 15px 30px;
+        background-color: #00ffcc;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>NOKTRA Mint Page</h1>
+    <button id="connect">Connect Wallet</button>
+    <button id="mint" disabled>Mint Token</button>
+
+    <script>
+      const connectButton = document.getElementById('connect');
+      const mintButton = document.getElementById('mint');
+      let provider = null;
+
+      window.onload = () => {
+        if ('solana' in window) {
+          provider = window.solana;
+          if (provider.isPhantom) {
+            connectButton.onclick = async () => {
+              try {
+                const resp = await provider.connect();
+                console.log('Connected:', resp.publicKey.toString());
+                connectButton.innerText = 'Connected';
+                mintButton.disabled = false;
+              } catch (err) {
+                console.error(err);
+              }
+            };
+
+            mintButton.onclick = async () => {
+              alert('Minting feature is coming soon.');
+            };
+          }
+        } else {
+          alert('Phantom Wallet not found. Please install it.');
+        }
+      };
+    </script>
+  </body>
+</html>
