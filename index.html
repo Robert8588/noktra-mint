@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOKTRA Mint Page</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <style>
+      body {
+        background-color: black;
+        color: #00ff99;
+        font-family: monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      button {
+        background-color: #00ff99;
+        color: black;
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>NOKTRA Mint Page</h1>
+    <button id="connectButton">Connect Wallet</button>
+    <button id="mintButton" disabled>Mint Token</button>
+
+    <script>
+      const connectButton = document.getElementById('connectButton');
+      const mintButton = document.getElementById('mintButton');
+      let provider = null;
+
+      function getProvider() {
+        if ('solana' in window) {
+          const provider = window.solana;
+          if (provider.isPhantom) {
+            return provider;
+          }
+        }
+        window.open('https://phantom.app/', '_blank');
+      }
+
+      connectButton.onclick = async () => {
+        provider = getProvider();
+        if (provider) {
+          try {
+            await provider.connect();
+            mintButton.disabled = false;
+          } catch (err) {
+            console.error('Connection failed:', err);
+          }
+        }
+      };
+
+      mintButton.onclick = async () => {
+        alert('Minting not yet connected to contract. Devnet only. Placeholder.');
+      };
+    </script>
+  </body>
+</html>
