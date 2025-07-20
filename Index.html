@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOKTRA Mint</title>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.41.1/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.5/lib/index.iife.js"></script>
+  </head>
+  <body style="background-color:#000; color:#0f0; font-family:monospace; text-align:center; padding-top:60px;">
+    <h1>💎 Mint NOKTRA Token</h1>
+    <p>Network: <strong>Devnet</strong></p>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <button onclick="mintToken()">Mint Token</button>
+    <p id="status"></p>
+
+    <script>
+      const tokenMintAddress = new solanaWeb3.PublicKey("DsCaxA5azrdagpemHHPbMPoL5q88LY6QpuLjaJfonHhe");
+
+      let wallet = null;
+
+      async function connectWallet() {
+        if ('solana' in window) {
+          try {
+            const resp = await window.solana.connect();
+            wallet = resp.publicKey;
+            document.getElementById("status").innerText = "Connected: " + wallet.toString();
+          } catch (err) {
+            document.getElementById("status").innerText = "Connection failed.";
+          }
+        } else {
+          alert("Phantom Wallet not found");
+        }
+      }
+
+      async function mintToken() {
+        if (!wallet) return alert("Please connect your wallet first.");
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
+        const mint = tokenMintAddress;
+
+        const token = new splToken.Token(connection, mint, splToken.TOKEN_PROGRAM_ID, null);
+        const fromWallet = window.solana;
+
+        const associatedAddress = await splToken.Token.getAssociatedTokenAddress(
+          splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+          splToken.TOKEN_PROGRAM_ID,
+          mint,
+          wallet
+        );
+
+        const transaction = new solanaWeb3.Transaction().add(
+          splToken.Token.createAssociatedTokenAccountInstruction(
+            splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+            splToken.TOKEN_PROGRAM_ID,
+            mint,
+            associatedAddress,
+            wallet,
+            wallet
+          ),
+          splToken.Token.createMintToInstruction(
+            splToken.TOKEN_PROGRAM_ID,
+            mint,
+            associatedAddress,
+            wallet,
+            [],
+            1000000 // ilość tokenów do mintowania
+          )
+        );
+
+        try {
+          let { blockhash } = await connection.getRecentBlockhash();
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = wallet;
+          const signed = await fromWallet.signTransaction(transaction);
+          const txid = await connection.sendRawTransaction(signed.serialize());
+          await connection.confirmTransaction(txid);
+          document.getElementById("status").innerText = "✅ Minted! TX: " + txid;
+        } catch (err) {
+          console.error(err);
+          document.getElementById("status").innerText = "❌ Error minting token.";
+        }
+      }
+    </script>
+  </body>
+</html>
